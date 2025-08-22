@@ -11,6 +11,7 @@ const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const TripPlanningPage = lazy(() => import('@/pages/TripPlanningPage'));
 const TripDetailPage = lazy(() => import('@/pages/TripDetailPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const UserSettingsPage = lazy(() => import('@/pages/UserSettingsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/plan-trip" element={<TripPlanningPage />} />
           <Route path="/trip/:id" element={<TripDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<UserSettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

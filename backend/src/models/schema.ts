@@ -1,190 +1,207 @@
-import { pgTable, text, timestamp, uuid, integer, boolean, jsonb, decimal, varchar, date } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, decimal, jsonb, uuid, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Users table (Google OAuth data)
+// Users table
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
-  googleId: text('google_id').unique().notNull(),
-  email: text('email').notNull(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
+  email: text('email').notNull().unique(),
+  firstName: text('first_name'),
+  lastName: text('last_name'),
   avatar: text('avatar'),
-  isActive: boolean('is_active').default(true).notNull(),
+  googleId: text('google_id').unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  emailIdx: index('users_email_idx').on(table.email),
+  googleIdIdx: index('users_google_id_idx').on(table.googleId),
+}));
 
 // Family profiles table
 export const familyProfiles = pgTable('family_profiles', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
-  preferences: jsonb('preferences').$type<{
-    interests: string[];
-    budget: {
-      min: number;
-      max: number;
-      currency: string;
-    };
-    travelStyle: string[];
-    dietaryRestrictions: string[];
-    accessibility: string[];
-  }>(),
+  budget: decimal('budget', { precision: 10, scale: 2 }),
+  travelStyle: text('travel_style').notNull().default('comfort'),
+  preferredDestinations: jsonb('preferred_destinations').$type<string[]>(),
+  interests: jsonb('interests').$type<string[]>(),
+  accessibility: boolean('accessibility').default(false),
+  petFriendly: boolean('pet_friendly').default(false),
+  dietaryRestrictions: jsonb('dietary_restrictions').$type<string[]>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  userIdIdx: index('family_profiles_user_id_idx').on(table.userId),
+}));
 
 // Family members table
 export const familyMembers = pgTable('family_members', {
   id: uuid('id').primaryKey().defaultRandom(),
-  familyId: uuid('family_id').references(() => familyProfiles.id, { onDelete: 'cascade' }).notNull(),
+  familyId: uuid('family_id').notNull().references(() => familyProfiles.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   age: integer('age').notNull(),
-  relationship: text('relationship').notNull(), // parent, child, grandparent, etc.
+  relationship: text('relationship').notNull(),
   interests: jsonb('interests').$type<string[]>(),
-  dietaryRestrictions: jsonb('dietary_restrictions').$type<string[]>(),
-  accessibility: jsonb('accessibility').$type<string[]>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  familyIdIdx: index('family_members_family_id_idx').on(table.familyId),
+}));
 
 // Trips table
 export const trips = pgTable('trips', {
   id: uuid('id').primaryKey().defaultRandom(),
-  familyId: uuid('family_id').references(() => familyProfiles.id, { onDelete: 'cascade' }).notNull(),
+  familyId: uuid('family_id').notNull().references(() => familyProfiles.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
   destination: text('destination').notNull(),
-  startDate: date('start_date').notNull(),
-  endDate: date('end_date').notNull(),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
   budget: decimal('budget', { precision: 10, scale: 2 }),
-  currency: varchar('currency', { length: 3 }).default('USD'),
-  status: text('status').default('planning').notNull(), // planning, booked, completed, cancelled
-  preferences: jsonb('preferences').$type<{
-    accommodationType: string[];
-    transportationType: string[];
-    activityTypes: string[];
-    diningPreferences: string[];
-  }>(),
+  status: text('status').notNull().default('planning'), // planning, confirmed, completed, cancelled
+  totalCost: decimal('total_cost', { precision: 10, scale: 2 }).default('0'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  familyIdIdx: index('trips_family_id_idx').on(table.familyId),
+  statusIdx: index('trips_status_idx').on(table.status),
+  destinationIdx: index('trips_destination_idx').on(table.destination),
+}));
 
 // Itineraries table
 export const itineraries = pgTable('itineraries', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'cascade' }).notNull(),
+  tripId: uuid('trip_id').notNull().references(() => trips.id, { onDelete: 'cascade' }),
   dayNumber: integer('day_number').notNull(),
-  date: date('date').notNull(),
+  date: timestamp('date').notNull(),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  tripIdIdx: index('itineraries_trip_id_idx').on(table.tripId),
+  dayNumberIdx: index('itineraries_day_number_idx').on(table.dayNumber),
+}));
 
 // Activities table
 export const activities = pgTable('activities', {
   id: uuid('id').primaryKey().defaultRandom(),
-  itineraryId: uuid('itinerary_id').references(() => itineraries.id, { onDelete: 'cascade' }).notNull(),
+  itineraryId: uuid('itinerary_id').notNull().references(() => itineraries.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   description: text('description'),
-  type: text('type').notNull(), // attraction, restaurant, transportation, accommodation, custom
+  type: text('type').notNull(), // attraction, restaurant, transport, accommodation
   location: text('location').notNull(),
-  latitude: decimal('latitude', { precision: 10, scale: 8 }),
-  longitude: decimal('longitude', { precision: 11, scale: 8 }),
   startTime: timestamp('start_time'),
   endTime: timestamp('end_time'),
-  duration: integer('duration'), // in minutes
-  cost: decimal('cost', { precision: 10, scale: 2 }),
-  currency: varchar('currency', { length: 3 }).default('USD'),
+  cost: decimal('cost', { precision: 10, scale: 2 }).default('0'),
   bookingReference: text('booking_reference'),
-  externalId: text('external_id'), // ID from external APIs (TripAdvisor, Google Places, etc.)
-  externalData: jsonb('external_data'), // Raw data from external APIs
-  isBooked: boolean('is_booked').default(false),
-  isConfirmed: boolean('is_confirmed').default(false),
-  notes: text('notes'),
+  externalId: text('external_id'), // For API integrations
+  metadata: jsonb('metadata'), // Additional data from APIs
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  itineraryIdIdx: index('activities_itinerary_id_idx').on(table.itineraryId),
+  typeIdx: index('activities_type_idx').on(table.type),
+  externalIdIdx: index('activities_external_id_idx').on(table.externalId),
+}));
 
 // Accommodations table
 export const accommodations = pgTable('accommodations', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'cascade' }).notNull(),
+  tripId: uuid('trip_id').notNull().references(() => trips.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
-  type: text('type').notNull(), // hotel, resort, apartment, house, etc.
   address: text('address').notNull(),
-  city: text('city').notNull(),
-  country: text('country').notNull(),
-  latitude: decimal('latitude', { precision: 10, scale: 8 }),
-  longitude: decimal('longitude', { precision: 11, scale: 8 }),
-  checkInDate: date('check_in_date').notNull(),
-  checkOutDate: date('check_out_date').notNull(),
-  roomType: text('room_type'),
-  numberOfRooms: integer('number_of_rooms').default(1),
-  numberOfGuests: integer('number_of_guests').notNull(),
-  pricePerNight: decimal('price_per_night', { precision: 10, scale: 2 }),
-  totalPrice: decimal('total_price', { precision: 10, scale: 2 }),
-  currency: varchar('currency', { length: 3 }).default('USD'),
+  checkIn: timestamp('check_in').notNull(),
+  checkOut: timestamp('check_out').notNull(),
+  cost: decimal('cost', { precision: 10, scale: 2 }).notNull(),
   bookingReference: text('booking_reference'),
-  externalId: text('external_id'), // ID from Booking.com or other booking platforms
-  externalData: jsonb('external_data'), // Raw data from external APIs
-  amenities: jsonb('amenities').$type<string[]>(),
-  isBooked: boolean('is_booked').default(false),
-  isConfirmed: boolean('is_confirmed').default(false),
-  notes: text('notes'),
+  externalId: text('external_id'),
+  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  tripIdIdx: index('accommodations_trip_id_idx').on(table.tripId),
+  externalIdIdx: index('accommodations_external_id_idx').on(table.externalId),
+}));
 
 // Flights table
 export const flights = pgTable('flights', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'cascade' }).notNull(),
-  type: text('type').notNull(), // departure, return
+  tripId: uuid('trip_id').notNull().references(() => trips.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // departure, return, internal
   airline: text('airline').notNull(),
   flightNumber: text('flight_number').notNull(),
-  departureAirport: text('departure_airport').notNull(),
-  arrivalAirport: text('arrival_airport').notNull(),
-  departureTime: timestamp('departure_time').notNull(),
-  arrivalTime: timestamp('arrival_time').notNull(),
-  duration: integer('duration'), // in minutes
-  price: decimal('price', { precision: 10, scale: 2 }),
-  currency: varchar('currency', { length: 3 }).default('USD'),
+  from: text('from').notNull(),
+  to: text('to').notNull(),
+  departure: timestamp('departure').notNull(),
+  arrival: timestamp('arrival').notNull(),
+  cost: decimal('cost', { precision: 10, scale: 2 }).notNull(),
   bookingReference: text('booking_reference'),
-  externalId: text('external_id'), // ID from Skyscanner or other flight APIs
-  externalData: jsonb('external_data'), // Raw data from external APIs
-  isBooked: boolean('is_booked').default(false),
-  isConfirmed: boolean('is_confirmed').default(false),
-  notes: text('notes'),
+  externalId: text('external_id'),
+  metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  tripIdIdx: index('flights_trip_id_idx').on(table.tripId),
+  typeIdx: index('flights_type_idx').on(table.type),
+  externalIdIdx: index('flights_external_id_idx').on(table.externalId),
+}));
 
-// Trip sharing table
+// Trip shares table
 export const tripShares = pgTable('trip_shares', {
   id: uuid('id').primaryKey().defaultRandom(),
-  tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'cascade' }).notNull(),
-  shareToken: text('share_token').unique().notNull(),
-  shareType: text('share_type').notNull(), // public, private, email
+  tripId: uuid('trip_id').notNull().references(() => trips.id, { onDelete: 'cascade' }),
+  sharedBy: uuid('shared_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sharedWith: text('shared_with').notNull(), // Email address
+  permissions: jsonb('permissions').$type<string[]>(), // view, edit, comment
   expiresAt: timestamp('expires_at'),
-  isActive: boolean('is_active').default(true).notNull(),
+  isActive: boolean('is_active').default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  tripIdIdx: index('trip_shares_trip_id_idx').on(table.tripId),
+  sharedByIdx: index('trip_shares_shared_by_idx').on(table.sharedBy),
+  sharedWithIdx: index('trip_shares_shared_with_idx').on(table.sharedWith),
+}));
 
-// API cache table for external API responses
+// API cache table
 export const apiCache = pgTable('api_cache', {
   id: uuid('id').primaryKey().defaultRandom(),
-  key: text('key').unique().notNull(),
+  key: text('key').notNull().unique(),
   data: jsonb('data').notNull(),
-  source: text('source').notNull(), // tripadvisor, google_places, skyscanner, booking
+  source: text('source').notNull(), // tripadvisor, google, skyscanner, booking
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  keyIdx: index('api_cache_key_idx').on(table.key),
+  sourceIdx: index('api_cache_source_idx').on(table.source),
+  expiresAtIdx: index('api_cache_expires_at_idx').on(table.expiresAt),
+}));
 
-// Define relationships
+// User preferences table
+export const userPreferences = pgTable('user_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  language: text('language').default('en'),
+  currency: text('currency').default('USD'),
+  timezone: text('timezone').default('UTC'),
+  emailNotifications: boolean('email_notifications').default(true),
+  pushNotifications: boolean('push_notifications').default(true),
+  marketingEmails: boolean('marketing_emails').default(false),
+  profileVisibility: text('profile_visibility').default('public'),
+  shareTripData: boolean('share_trip_data').default(true),
+  allowAnalytics: boolean('allow_analytics').default(true),
+  allowCookies: boolean('allow_cookies').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('user_preferences_user_id_idx').on(table.userId),
+}));
+
+// Relations
 export const usersRelations = relations(users, ({ many }) => ({
   familyProfiles: many(familyProfiles),
+  tripShares: many(tripShares),
+  userPreferences: many(userPreferences),
 }));
 
 export const familyProfilesRelations = relations(familyProfiles, ({ one, many }) => ({
@@ -211,7 +228,7 @@ export const tripsRelations = relations(trips, ({ one, many }) => ({
   itineraries: many(itineraries),
   accommodations: many(accommodations),
   flights: many(flights),
-  shares: many(tripShares),
+  tripShares: many(tripShares),
 }));
 
 export const itinerariesRelations = relations(itineraries, ({ one, many }) => ({
@@ -247,5 +264,16 @@ export const tripSharesRelations = relations(tripShares, ({ one }) => ({
   trip: one(trips, {
     fields: [tripShares.tripId],
     references: [trips.id],
+  }),
+  sharedBy: one(users, {
+    fields: [tripShares.sharedBy],
+    references: [users.id],
+  }),
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id],
   }),
 }));
