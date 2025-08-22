@@ -12,9 +12,8 @@ const LoginPage = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      // Redirect to backend Google OAuth endpoint
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
-      window.location.href = `${backendUrl}/api/auth/google`;
+      // Redirect to backend Google OAuth endpoint using proxy
+      window.location.href = '/api/auth/google';
     } catch (error) {
       console.error('Login failed:', error);
       setIsLoading(false);

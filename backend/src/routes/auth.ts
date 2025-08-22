@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import { generateToken, authenticateToken, requireAuth } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { GoogleUser } from '../config/passport';
 
 const router = Router();
 
@@ -10,7 +11,15 @@ const router = Router();
  * @desc    Initiate Google OAuth login
  * @access  Public
  */
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req: Request, res: Response) => {
+  if (!process.env['GOOGLE_CLIENT_ID'] || !process.env['GOOGLE_CLIENT_SECRET']) {
+    return res.status(503).json({
+      error: 'Google OAuth not configured',
+      message: 'Google OAuth credentials are not configured. Please contact the administrator.'
+    });
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res);
+});
 
 /**
  * @route   GET /api/auth/google/callback
@@ -18,10 +27,18 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
  * @access  Public
  */
 router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req: Request, res: Response, next) => {
+    if (!process.env['GOOGLE_CLIENT_ID'] || !process.env['GOOGLE_CLIENT_SECRET']) {
+      return res.status(503).json({
+        error: 'Google OAuth not configured',
+        message: 'Google OAuth credentials are not configured. Please contact the administrator.'
+      });
+    }
+    passport.authenticate('google', { failureRedirect: '/login' })(req, res, next);
+  },
   (req: Request, res: Response) => {
     try {
-      const user = req.user as any;
+      const user = req.user as GoogleUser;
       
       if (!user) {
         logger.error('No user found in OAuth callback');
@@ -32,9 +49,9 @@ router.get('/google/callback',
       const token = generateToken({
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        avatar: user.avatar,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        avatar: user.avatar || undefined,
       });
 
       logger.info('User authenticated successfully:', user.email);

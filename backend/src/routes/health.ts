@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
-import { checkDatabaseHealth } from '../config/database';
 
 const router = Router();
 
@@ -17,8 +16,8 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     message: 'Server is healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    version: process.env.npm_package_version || '1.0.0',
+    environment: process.env['NODE_ENV'] || 'development',
+    version: process.env['npm_package_version'] || '1.0.0',
   });
 }));
 
@@ -30,6 +29,7 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
   });
 
   // Check database health
+  const { checkDatabaseHealth } = await import('../config/database');
   const dbHealth = await checkDatabaseHealth();
 
   const healthInfo = {
@@ -37,8 +37,8 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
     message: 'Server is healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    version: process.env.npm_package_version || '1.0.0',
+    environment: process.env['NODE_ENV'] || 'development',
+    version: process.env['npm_package_version'] || '1.0.0',
     system: {
       nodeVersion: process.version,
       platform: process.platform,
@@ -62,6 +62,7 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
 // Readiness check for Kubernetes
 router.get('/ready', asyncHandler(async (req: Request, res: Response) => {
   // Check database health
+  const { checkDatabaseHealth } = await import('../config/database');
   const dbHealth = await checkDatabaseHealth();
   
   // Server is ready if database is healthy

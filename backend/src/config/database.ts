@@ -3,6 +3,10 @@ import postgres from 'postgres';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { logger } from '../utils/logger';
 import * as schema from '../models';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Database connection configuration
 const connectionString = process.env.DATABASE_URL;

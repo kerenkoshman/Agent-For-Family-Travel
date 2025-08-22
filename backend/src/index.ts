@@ -10,6 +10,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import { healthRouter } from './routes/health';
 import { authRouter } from './routes/auth';
+import { agentsRouter } from './routes/agents';
 import { configurePassport } from './config/passport';
 import { testConnection, runMigrations } from './config/database';
 import { validateConfig } from './config/environment';
@@ -71,6 +72,7 @@ app.use((req, _res, next) => {
 // Routes
 app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/agents', agentsRouter);
 
 // API versioning
 app.use('/api/v1', (req, _res, next) => {

@@ -33,15 +33,16 @@ export const configurePassport = () => {
     }
   });
 
-  // Google OAuth Strategy
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env['GOOGLE_CLIENT_ID']!,
-        clientSecret: process.env['GOOGLE_CLIENT_SECRET']!,
-        callbackURL: '/api/auth/google/callback',
-        scope: ['profile', 'email'],
-      },
+  // Google OAuth Strategy - only configure if credentials are available
+  if (process.env['GOOGLE_CLIENT_ID'] && process.env['GOOGLE_CLIENT_SECRET']) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env['GOOGLE_CLIENT_ID']!,
+          clientSecret: process.env['GOOGLE_CLIENT_SECRET']!,
+          callbackURL: '/api/auth/google/callback',
+          scope: ['profile', 'email'],
+        },
       async (_accessToken, _refreshToken, profile, done) => {
         try {
           logger.info('Google OAuth callback received for profile:', profile.id);
@@ -91,8 +92,10 @@ export const configurePassport = () => {
       }
     )
   );
-
-  logger.info('Passport.js configured with Google OAuth strategy');
+    logger.info('Passport.js configured with Google OAuth strategy');
+  } else {
+    logger.warn('Google OAuth credentials not configured. Google login will not work.');
+  }
 };
 
 /**
