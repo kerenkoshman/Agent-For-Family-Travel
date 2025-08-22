@@ -12,22 +12,11 @@ const LoginPage = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      // TODO: Implement actual Google OAuth
-      console.log('Google OAuth login');
-      
-      // Mock login for now
-      setTimeout(() => {
-        login({
-          id: '1',
-          email: 'user@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-        });
-        navigate('/dashboard');
-      }, 1000);
+      // Redirect to backend Google OAuth endpoint
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+      window.location.href = `${backendUrl}/api/auth/google`;
     } catch (error) {
       console.error('Login failed:', error);
-    } finally {
       setIsLoading(false);
     }
   };

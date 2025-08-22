@@ -6,6 +6,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const AuthCallbackPage = lazy(() => import('@/pages/AuthCallbackPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const TripPlanningPage = lazy(() => import('@/pages/TripPlanningPage'));
 const TripDetailPage = lazy(() => import('@/pages/TripDetailPage'));
@@ -19,6 +20,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/plan-trip" element={<TripPlanningPage />} />
           <Route path="/trip/:id" element={<TripDetailPage />} />

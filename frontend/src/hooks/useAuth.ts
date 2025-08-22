@@ -38,9 +38,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing user session
     const checkAuth = async () => {
       try {
-        // TODO: Implement actual auth check with backend
+        const token = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
+        
+        if (token && storedUser) {
+          // TODO: Validate token with backend
           setUser(JSON.parse(storedUser));
         }
       } catch (error) {
@@ -58,10 +60,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    // TODO: Implement backend logout
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        // TODO: Call backend logout endpoint
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+        await fetch(`${backendUrl}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {

@@ -66,21 +66,21 @@ Build a SmolAgent that helps users plan family trips by suggesting destinations,
 
 ## 🔐 Phase 2: Authentication & User Management
 
-### 2.1 Google OAuth Setup
-- [ ] Set up Google OAuth credentials
-- [ ] Install and configure Passport.js with Google strategy
-- [ ] Create authentication middleware
-- [ ] Implement login/logout endpoints
-- [ ] Set up session management
-- [ ] Create user profile creation/update endpoints
+### 2.1 Google OAuth Setup ✅
+- [x] Set up Google OAuth credentials (configured in env.example)
+- [x] Install and configure Passport.js with Google strategy
+- [x] Create authentication middleware (JWT + session management)
+- [x] Implement login/logout endpoints
+- [x] Set up session management
+- [x] Create user profile creation/update endpoints
 
-### 2.2 Frontend Authentication
-- [ ] Create login page with Google OAuth button
-- [ ] Implement authentication context/provider
-- [ ] Create protected route components
-- [ ] Add authentication state management
-- [ ] Create user profile page
-- [ ] Implement logout functionality
+### 2.2 Frontend Authentication ✅
+- [x] Create login page with Google OAuth button
+- [x] Implement authentication context/provider
+- [x] Create protected route components
+- [x] Add authentication state management
+- [x] Create user profile page
+- [x] Implement logout functionality
 
 ### 2.3 User Profile Management
 - [ ] Create family profile form component
