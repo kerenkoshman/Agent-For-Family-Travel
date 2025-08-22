@@ -53,11 +53,17 @@ const HomePage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  to="/plan-trip"
+                  to="/chat-plan"
                   className="btn bg-white text-primary-700 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
                 >
-                  Start Planning
+                  Chat with AI Assistant
                   <ArrowRight className="ml-2 w-5 h-5" />
+                </Link>
+                <Link
+                  to="/plan-trip"
+                  className="btn border-2 border-white text-white hover:bg-white hover:text-primary-700 px-6 py-4 text-lg font-semibold"
+                >
+                  Traditional Planning
                 </Link>
                 <Link
                   to="/login"
@@ -185,13 +191,21 @@ const HomePage = () => {
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
             Join thousands of families who trust our AI to create unforgettable travel experiences.
           </p>
-          <Link
-            to="/plan-trip"
-            className="btn bg-white text-primary-700 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
-          >
-            Start Your Free Trip Planning
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/chat-plan"
+              className="btn bg-white text-primary-700 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+            >
+              Chat with AI Assistant
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+            <Link
+              to="/plan-trip"
+              className="btn border-2 border-white text-white hover:bg-white hover:text-primary-700 px-6 py-4 text-lg font-semibold"
+            >
+              Traditional Planning
+            </Link>
+          </div>
         </div>
       </section>
     </div>
