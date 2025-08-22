@@ -14,7 +14,7 @@ const TripPlanningPage = () => {
     childrenAges: [8, 5],
     interests: [] as string[],
     budget: 5000,
-    destination: '',
+    destination: 'Walt Disney World Resort, Orlando',
     startDate: '',
     endDate: '',
     travelStyle: 'relaxed',
@@ -35,6 +35,19 @@ const TripPlanningPage = () => {
   ];
 
   const handleNext = () => {
+    // Validate current step before proceeding
+    if (currentStep === 3) {
+      // Step 3 is trip details - validate required fields
+      if (!formData.destination || formData.destination.trim() === '') {
+        alert('Please enter a destination for your trip.');
+        return;
+      }
+      if (!formData.startDate || !formData.endDate) {
+        alert('Please select start and end dates for your trip.');
+        return;
+      }
+    }
+
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -52,6 +65,17 @@ const TripPlanningPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.destination || formData.destination.trim() === '') {
+      alert('Please enter a destination for your trip.');
+      return;
+    }
+
+    if (!formData.startDate || !formData.endDate) {
+      alert('Please select start and end dates for your trip.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // Prepare the trip planning request
@@ -63,7 +87,7 @@ const TripPlanningPage = () => {
           interests: formData.interests,
           dietaryRestrictions: [], // TODO: Add dietary restrictions to form
         },
-        destination: formData.destination,
+        destination: formData.destination.trim(),
         budget: formData.budget,
         startDate: formData.startDate,
         endDate: formData.endDate,
@@ -214,7 +238,7 @@ const TripPlanningPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Destination (optional)
+                    Destination *
                   </label>
                   <input
                     type="text"
@@ -222,7 +246,9 @@ const TripPlanningPage = () => {
                     onChange={(e) => updateFormData('destination', e.target.value)}
                     placeholder="e.g., Paris, France"
                     className="input"
+                    required
                   />
+                  <p className="text-sm text-gray-500 mt-1">Enter your desired destination</p>
                 </div>
 
                 <div>

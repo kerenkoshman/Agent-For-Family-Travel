@@ -9,7 +9,7 @@ export interface AgentContext {
     start: Date;
     end: Date;
   };
-  destination?: string;
+  destination?: string | undefined;
 }
 
 export interface AgentResult<T = any> {

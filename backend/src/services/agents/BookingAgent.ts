@@ -117,8 +117,19 @@ export class BookingAgent extends BaseAgent {
         return this.handleError(new Error('Invalid context'), 'validation');
       }
 
-      if (!this.context.destination || !this.context.dates) {
-        return this.handleError(new Error('Missing destination or dates'), 'validation');
+      const destination = this.context.destination || this.context.tripPreferences?.destination;
+      this.logExecution('Destination validation', { 
+        contextDestination: this.context.destination,
+        tripPreferencesDestination: this.context.tripPreferences?.destination,
+        finalDestination: destination 
+      });
+      
+      if (!destination) {
+        return this.handleError(new Error('Missing destination'), 'validation');
+      }
+      
+      if (!this.context.dates) {
+        return this.handleError(new Error('Missing dates'), 'validation');
       }
 
       // Step 1: Search for flights
@@ -150,18 +161,43 @@ export class BookingAgent extends BaseAgent {
         processingTime,
       });
 
-      return this.createSuccessResult(result, {
-        processingTime,
-        confidence: 0.9,
-      });
+          return this.createSuccessResult(result, {
+      processingTime,
+      confidence: 0.9,
+    });
 
-    } catch (error) {
-      return this.handleError(error as Error, 'booking execution');
-    }
+  } catch (error) {
+    return this.handleError(error as Error, 'booking execution');
+  }
+}
+
+  private getDestinationAirport(destination: string | undefined): string {
+    if (!destination) return 'MCO'; // Default to Orlando
+    
+    // Simple mapping of destinations to airports
+    const airportMap: Record<string, string> = {
+      'Walt Disney World Resort, Orlando': 'MCO',
+      'Disney World': 'MCO',
+      'Orlando': 'MCO',
+      'New York': 'JFK',
+      'Los Angeles': 'LAX',
+      'Chicago': 'ORD',
+      'Miami': 'MIA',
+      'Las Vegas': 'LAS',
+      'San Francisco': 'SFO',
+      'Seattle': 'SEA',
+      'Boston': 'BOS',
+      'Washington DC': 'DCA',
+    };
+    
+    return airportMap[destination] || 'MCO';
   }
 
   private async searchFlights(): Promise<FlightOption[]> {
     this.logExecution('Searching for flights');
+
+    const destination = this.context.destination || this.context.tripPreferences?.destination;
+    const destinationAirport = this.getDestinationAirport(destination);
 
     // For now, return sample flight data
     // In a real implementation, this would call Skyscanner API
@@ -176,7 +212,7 @@ export class BookingAgent extends BaseAgent {
           date: this.context.dates!.start.toISOString().split('T')[0],
         },
         arrival: {
-          airport: 'MCO',
+          airport: destinationAirport,
           time: '12:30',
           date: this.context.dates!.start.toISOString().split('T')[0],
         },

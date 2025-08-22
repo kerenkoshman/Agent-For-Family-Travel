@@ -36,7 +36,18 @@ router.post('/plan-trip', async (req: Request, res: Response) => {
       userId,
       destination: tripRequest.tripPreferences.destination,
       budget: tripRequest.tripPreferences.budget,
+      rawDestination: req.body.destination,
+      hasDestination: !!req.body.destination,
     });
+
+    // Validate required fields
+    if (!req.body.destination) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing destination',
+        message: 'Destination is required for trip planning',
+      });
+    }
 
     // Create agent context
     const context: AgentContext = {
@@ -45,7 +56,7 @@ router.post('/plan-trip', async (req: Request, res: Response) => {
       tripPreferences: tripRequest.tripPreferences,
       budget: tripRequest.tripPreferences.budget,
       dates: tripRequest.tripPreferences.dates,
-      destination: tripRequest.tripPreferences.destination || undefined,
+      destination: tripRequest.tripPreferences.destination,
     };
 
     // Create and execute SmolAgent
