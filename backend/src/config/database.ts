@@ -1,6 +1,8 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { logger } from '../utils/logger';
+import * as schema from '../models';
 
 // Database connection configuration
 const connectionString = process.env.DATABASE_URL;
@@ -17,8 +19,8 @@ const client = postgres(connectionString, {
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Create Drizzle instance
-export const db = drizzle(client);
+// Create Drizzle instance with schema
+export const db = drizzle(client, { schema });
 
 // Test database connection
 export const testConnection = async (): Promise<boolean> => {
@@ -32,6 +34,17 @@ export const testConnection = async (): Promise<boolean> => {
   }
 };
 
+// Run database migrations
+export const runMigrations = async (): Promise<void> => {
+  try {
+    await migrate(db, { migrationsFolder: './drizzle' });
+    logger.info('Database migrations completed successfully');
+  } catch (error) {
+    logger.error('Database migration failed:', error);
+    throw error;
+  }
+};
+
 // Close database connection
 export const closeConnection = async (): Promise<void> => {
   try {
@@ -39,6 +52,36 @@ export const closeConnection = async (): Promise<void> => {
     logger.info('Database connection closed');
   } catch (error) {
     logger.error('Error closing database connection:', error);
+  }
+};
+
+// Database health check
+export const checkDatabaseHealth = async (): Promise<{
+  status: 'healthy' | 'unhealthy';
+  message: string;
+  details?: any;
+}> => {
+  try {
+    const startTime = Date.now();
+    await client`SELECT 1`;
+    const responseTime = Date.now() - startTime;
+
+    return {
+      status: 'healthy',
+      message: 'Database is responding',
+      details: {
+        responseTime: `${responseTime}ms`,
+        connectionPool: 'active',
+      },
+    };
+  } catch (error) {
+    return {
+      status: 'unhealthy',
+      message: 'Database connection failed',
+      details: {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+    };
   }
 };
 

@@ -7,9 +7,14 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import { healthRouter } from './routes/health';
+import { testConnection, runMigrations } from './config/database';
+import { validateConfig } from './config/environment';
 
 // Load environment variables
 dotenv.config();
+
+// Validate configuration
+validateConfig();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -53,12 +58,33 @@ app.use('/api/v1', (req, res, next) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT}`);
-  logger.info(`📊 Health check available at http://localhost:${PORT}/api/health`);
-  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    // Test database connection
+    const dbConnected = await testConnection();
+    if (!dbConnected) {
+      throw new Error('Failed to connect to database');
+    }
+
+    // Run database migrations
+    await runMigrations();
+
+    // Start server
+    app.listen(PORT, () => {
+      logger.info(`🚀 Server running on port ${PORT}`);
+      logger.info(`📊 Health check available at http://localhost:${PORT}/api/health`);
+      logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`🗄️ Database: Connected and migrations completed`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

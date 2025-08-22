@@ -30,12 +30,12 @@ Build a SmolAgent that helps users plan family trips by suggesting destinations,
 - [x] Set up GitHub repository and branch protection
 
 ### 1.2 Backend Foundation
-- [ ] Initialize Node.js Express server
-- [ ] Set up TypeScript configuration
-- [ ] Configure environment variables (.env files)
-- [ ] Set up basic Express middleware (CORS, body-parser, etc.)
-- [ ] Create basic health check endpoint
-- [ ] Set up logging with Winston or similar
+- [x] Initialize Node.js Express server
+- [x] Set up TypeScript configuration
+- [x] Configure environment variables (.env files)
+- [x] Set up basic Express middleware (CORS, body-parser, etc.)
+- [x] Create basic health check endpoint
+- [x] Set up logging with Winston or similar
 
 ### 1.3 Database Setup
 - [ ] Set up PostgreSQL database (local development)

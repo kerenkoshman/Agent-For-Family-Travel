@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { checkDatabaseHealth } from '../config/database';
 
 const router = Router();
 
@@ -28,6 +29,9 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 
+  // Check database health
+  const dbHealth = await checkDatabaseHealth();
+
   const healthInfo = {
     success: true,
     message: 'Server is healthy',
@@ -47,7 +51,7 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
       cpu: process.cpuUsage(),
     },
     services: {
-      database: 'unknown', // Will be updated when database is connected
+      database: dbHealth,
       externalApis: 'unknown', // Will be updated when APIs are configured
     },
   };
@@ -57,20 +61,29 @@ router.get('/detailed', asyncHandler(async (req: Request, res: Response) => {
 
 // Readiness check for Kubernetes
 router.get('/ready', asyncHandler(async (req: Request, res: Response) => {
-  // Add checks for database connection, external services, etc.
-  const isReady = true; // Will be updated with actual checks
+  // Check database health
+  const dbHealth = await checkDatabaseHealth();
+  
+  // Server is ready if database is healthy
+  const isReady = dbHealth.status === 'healthy';
 
   if (isReady) {
     res.status(200).json({
       success: true,
       message: 'Server is ready',
       timestamp: new Date().toISOString(),
+      services: {
+        database: dbHealth,
+      },
     });
   } else {
     res.status(503).json({
       success: false,
       message: 'Server is not ready',
       timestamp: new Date().toISOString(),
+      services: {
+        database: dbHealth,
+      },
     });
   }
 }));
