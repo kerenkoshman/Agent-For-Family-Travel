@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Clock, Edit, Download, Share2 } from 'lucide-react';
 
+
 interface Trip {
   id: string;
   title: string;

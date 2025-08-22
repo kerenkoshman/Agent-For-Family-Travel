@@ -49,7 +49,7 @@ export interface GooglePlacesNearbyParams {
 
 export class GooglePlacesClient extends BaseApiClient {
   constructor(apiKey: string) {
-    super('https://maps.googleapis.com/maps/api/place', apiKey);
+    super('https://maps.googleapis.com/maps/api/place', apiKey, 'google_places');
   }
 
   async searchPlaces(params: GooglePlacesSearchParams): Promise<ApiResponse<GooglePlace[]>> {

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import { tripService, TripPlanningRequest } from '@/services/tripService';
+
 
 const TripPlanningPage = () => {
   const navigate = useNavigate();
@@ -45,10 +49,53 @@ const TripPlanningPage = () => {
     }
   };
 
-  const handleSubmit = () => {
-    // TODO: Submit to backend and start AI planning
-    console.log('Form submitted:', formData);
-    navigate('/dashboard');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      // Prepare the trip planning request
+      const tripRequest: TripPlanningRequest = {
+        familyProfile: {
+          adults: formData.familySize - formData.childrenAges.length,
+          children: formData.childrenAges.length,
+          ages: formData.childrenAges,
+          interests: formData.interests,
+          dietaryRestrictions: [], // TODO: Add dietary restrictions to form
+        },
+        destination: formData.destination,
+        budget: formData.budget,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        tripType: 'family',
+        accommodationType: 'hotel',
+        transportation: 'flight',
+        travelStyle: formData.travelStyle,
+      };
+
+      console.log('Submitting trip planning request:', tripRequest);
+
+      // Call the trip service to start AI planning
+      const result = await tripService.planTrip(tripRequest);
+      
+      if (result.success) {
+        console.log('AI planning completed successfully:', result);
+        
+        // Store the trip data in localStorage for now (in a real app, this would go to a database)
+        const tripId = `trip-${Date.now()}`;
+        localStorage.setItem(`trip-${tripId}`, JSON.stringify(result.data));
+        
+        // Navigate to trip detail page
+        navigate(`/trip/${tripId}`);
+      } else {
+        throw new Error(result.error || 'AI planning failed');
+      }
+    } catch (error) {
+      console.error('Failed to start AI planning:', error);
+      alert('Failed to start AI planning. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const updateFormData = (field: string, value: any) => {
@@ -76,21 +123,25 @@ const TripPlanningPage = () => {
                     Family Size
                   </label>
                   <div className="flex items-center space-x-4">
-                    <button
+                    <Button
                       onClick={() => updateFormData('familySize', Math.max(1, formData.familySize - 1))}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-primary-500"
+                      variant="outline"
+                      size="sm"
+                      className="w-10 h-10 rounded-full"
                     >
                       -
-                    </button>
+                    </Button>
                     <span className="text-2xl font-bold text-gray-900 w-12 text-center">
                       {formData.familySize}
                     </span>
-                    <button
+                    <Button
                       onClick={() => updateFormData('familySize', formData.familySize + 1)}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center hover:border-primary-500"
+                      variant="outline"
+                      size="sm"
+                      className="w-10 h-10 rounded-full"
                     >
                       +
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -116,12 +167,13 @@ const TripPlanningPage = () => {
                         <span className="text-gray-600">years old</span>
                       </div>
                     ))}
-                    <button
+                    <Button
                       onClick={() => updateFormData('childrenAges', [...formData.childrenAges, 5])}
-                      className="btn-secondary btn-sm"
+                      variant="secondary"
+                      size="sm"
                     >
                       Add Child
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -293,27 +345,30 @@ const TripPlanningPage = () => {
 
       {/* Form */}
       <div className="max-w-4xl mx-auto">
-        <div className="card p-8">
+        <Card>
+          <CardContent className="p-8">
           {renderStep()}
 
           {/* Navigation */}
           <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-            <button
+            <Button
               onClick={handleBack}
               disabled={currentStep === 1}
-              className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="secondary"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={handleNext}
-              className="btn-primary"
+              variant="primary"
+              loading={isSubmitting}
+              disabled={isSubmitting}
             >
               {currentStep === totalSteps ? (
                 <>
-                  Start AI Planning
+                  {isSubmitting ? 'Starting AI Planning...' : 'Start AI Planning'}
                   <Sparkles className="w-4 h-4 ml-2" />
                 </>
               ) : (
@@ -322,9 +377,10 @@ const TripPlanningPage = () => {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}
-            </button>
+            </Button>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

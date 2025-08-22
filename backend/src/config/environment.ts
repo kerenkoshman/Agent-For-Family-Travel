@@ -19,6 +19,7 @@ const optionalEnvVars = [
   'GOOGLE_PLACES_API_KEY',
   'SKYSCANNER_API_KEY',
   'BOOKING_API_KEY',
+  'OPENWEATHER_API_KEY',
 ];
 
 // Check for required environment variables
@@ -48,6 +49,7 @@ export const config = {
   GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY,
   SKYSCANNER_API_KEY: process.env.SKYSCANNER_API_KEY,
   BOOKING_API_KEY: process.env.BOOKING_API_KEY,
+  OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
 
   // Feature flags
   ENABLE_LOGGING: process.env.ENABLE_LOGGING !== 'false',

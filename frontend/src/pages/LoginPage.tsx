@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent } from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -43,14 +45,16 @@ const LoginPage = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="card py-8 px-4 sm:px-10">
+        <Card>
+          <CardContent className="py-8 px-4 sm:px-10">
           <div className="space-y-6">
             {/* Google OAuth Button */}
             <div>
-              <button
+              <Button
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="outline"
+                className="w-full"
               >
                 {isLoading ? (
                   <div className="spinner w-5 h-5 mr-3"></div>
@@ -75,7 +79,7 @@ const LoginPage = () => {
                   </svg>
                 )}
                 Continue with Google
-              </button>
+              </Button>
             </div>
 
             <div className="relative">
@@ -89,56 +93,40 @@ const LoginPage = () => {
 
             {/* Email/Password Form */}
             <form className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
-                </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="input pl-10"
-                    placeholder="Enter your email"
-                  />
-                </div>
-              </div>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                label="Email address"
+                placeholder="Enter your email"
+                leftIcon={<Mail className="h-5 w-5" />}
+              />
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    required
-                    className="input pl-10 pr-10"
-                    placeholder="Enter your password"
-                  />
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+                label="Password"
+                placeholder="Enter your password"
+                leftIcon={<Lock className="h-5 w-5" />}
+                rightIcon={
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
+                    className="p-1 hover:bg-gray-100 rounded"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff className="h-4 w-4" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye className="h-4 w-4" />
                     )}
                   </button>
-                </div>
-              </div>
+                }
+              />
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -161,12 +149,13 @@ const LoginPage = () => {
               </div>
 
               <div>
-                <button
+                <Button
                   type="submit"
-                  className="w-full btn-primary py-3"
+                  variant="primary"
+                  className="w-full"
                 >
                   Sign in
-                </button>
+                </Button>
               </div>
             </form>
 
@@ -175,14 +164,15 @@ const LoginPage = () => {
                 Don't have an account?{' '}
                 <Link
                   to="/signup"
-                  className="font-medium text-primary-600 hover:text-primary-500"
+                  className="font-medium text-blue-600 hover:text-blue-500"
                 >
                   Sign up for free
                 </Link>
               </p>
             </div>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

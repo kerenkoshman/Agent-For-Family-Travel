@@ -21,6 +21,7 @@ router.get('/google', (req: Request, res: Response) => {
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res);
 });
 
+
 /**
  * @route   GET /api/auth/google/callback
  * @desc    Google OAuth callback

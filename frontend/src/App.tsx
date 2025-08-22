@@ -12,6 +12,7 @@ const TripPlanningPage = lazy(() => import('@/pages/TripPlanningPage'));
 const TripDetailPage = lazy(() => import('@/pages/TripDetailPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const UserSettingsPage = lazy(() => import('@/pages/UserSettingsPage'));
+const AgentTestPage = lazy(() => import('@/pages/AgentTestPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           <Route path="/trip/:id" element={<TripDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<UserSettingsPage />} />
+          <Route path="/test-agents" element={<AgentTestPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

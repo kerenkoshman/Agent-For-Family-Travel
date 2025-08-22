@@ -59,7 +59,7 @@ export interface SkyscannerRoute {
 
 export class SkyscannerClient extends BaseApiClient {
   constructor(apiKey: string) {
-    super('https://partners.api.skyscanner.net/apiservices/v3', apiKey);
+    super('https://partners.api.skyscanner.net/apiservices/v3', apiKey, 'skyscanner');
   }
 
   async searchFlights(params: SkyscannerSearchParams): Promise<ApiResponse<SkyscannerFlight[]>> {

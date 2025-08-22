@@ -52,7 +52,7 @@ export interface TripAdvisorSearchParams {
 
 export class TripAdvisorClient extends BaseApiClient {
   constructor(apiKey: string) {
-    super('https://api.content.tripadvisor.com/api/v1', apiKey);
+    super('https://api.content.tripadvisor.com/api/v1', apiKey, 'tripadvisor');
   }
 
   async searchAttractions(params: TripAdvisorSearchParams): Promise<ApiResponse<TripAdvisorAttraction[]>> {

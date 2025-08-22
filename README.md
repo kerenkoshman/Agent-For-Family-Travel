@@ -24,7 +24,7 @@ A SmolAgent that helps users plan family trips by suggesting destinations, creat
 - **Backend**: Node.js + Express + TypeScript
 - **Database**: PostgreSQL + Drizzle ORM
 - **Authentication**: Google OAuth
-- **APIs**: TripAdvisor, Google Places, Skyscanner, Booking.com
+- **APIs**: TripAdvisor, Google Places, Skyscanner, Booking.com, Weather (Mock-first approach)
 - **Testing**: Jest + Playwright
 - **Deployment**: Vercel + GitHub
 
@@ -111,6 +111,30 @@ Family-Trip-Agent/
 5. **Itinerary Creation**: Scheduler Agent builds daily schedules
 6. **Dashboard Display**: UI Agent prepares user-friendly output
 7. **Export & Share**: Generate PDFs and shareable links
+
+## 🔌 API Integration
+
+The project uses a **mock-first approach** for external APIs to avoid unexpected costs during development:
+
+### 🎯 Mock Data by Default
+- **Cost-effective**: No paid API calls during development
+- **Reliable**: Consistent responses for testing
+- **Fast**: No network latency or rate limits
+- **Safe**: No risk of hitting API quotas
+
+### 📡 Supported APIs (Mock + Real)
+- **TripAdvisor**: Attractions and restaurant recommendations
+- **Google Places**: Place search and geocoding
+- **Skyscanner**: Flight search and booking
+- **Booking.com**: Accommodation search and booking
+- **Weather**: Real-time weather data
+
+### 🔧 Configuration
+- **Default**: Uses realistic mock data
+- **Real APIs**: Set valid API keys in environment variables
+- **Automatic Fallback**: Falls back to mock data if real APIs fail
+
+For detailed API documentation, see [backend/API_INTEGRATION.md](backend/API_INTEGRATION.md).
 
 ## 🧪 Testing
 

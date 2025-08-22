@@ -1,6 +1,8 @@
 import { TripAdvisorClient, TripAdvisorSearchParams } from './TripAdvisorClient';
 import { GooglePlacesClient, GooglePlacesSearchParams, GooglePlacesNearbyParams } from './GooglePlacesClient';
 import { SkyscannerClient, SkyscannerSearchParams } from './SkyscannerClient';
+import { BookingClient, BookingSearchParams, BookingAvailabilityParams } from './BookingClient';
+import { WeatherClient, WeatherSearchParams } from './WeatherClient';
 import { logger } from '../../utils/logger';
 
 export interface SearchAttractionsParams {
@@ -43,21 +45,49 @@ export interface SearchPlacesParams {
   openNow?: boolean;
 }
 
+export interface SearchAccommodationsParams {
+  location: string;
+  checkIn: string;
+  checkOut: string;
+  adults?: number;
+  children?: number;
+  rooms?: number;
+  currency?: string;
+  limit?: number;
+  sort?: 'price' | 'rating' | 'distance' | 'popularity';
+  minPrice?: number;
+  maxPrice?: number;
+}
+
+export interface WeatherParams {
+  location: string;
+  units?: 'metric' | 'imperial';
+  lang?: string;
+}
+
 export class ApiServiceManager {
   private tripAdvisorClient: TripAdvisorClient;
   private googlePlacesClient: GooglePlacesClient;
   private skyscannerClient: SkyscannerClient;
+  private bookingClient: BookingClient;
+  private weatherClient: WeatherClient;
 
   constructor() {
+    // Use mock data by default to avoid paid API calls
     const tripAdvisorApiKey = process.env['TRIPADVISOR_API_KEY'] || 'your_tripadvisor_api_key_here';
     const googlePlacesApiKey = process.env['GOOGLE_PLACES_API_KEY'] || 'your_google_places_api_key_here';
     const skyscannerApiKey = process.env['SKYSCANNER_API_KEY'] || 'your_skyscanner_api_key_here';
+    const bookingApiKey = process.env['BOOKING_API_KEY'] || 'your_booking_api_key_here';
+    const weatherApiKey = process.env['OPENWEATHER_API_KEY'] || 'your_openweather_api_key_here';
 
     this.tripAdvisorClient = new TripAdvisorClient(tripAdvisorApiKey);
     this.googlePlacesClient = new GooglePlacesClient(googlePlacesApiKey);
     this.skyscannerClient = new SkyscannerClient(skyscannerApiKey);
+    this.bookingClient = new BookingClient(bookingApiKey);
+    this.weatherClient = new WeatherClient(weatherApiKey);
 
-    logger.info('API Service Manager initialized');
+    logger.info('API Service Manager initialized with mock data (to avoid paid API calls)');
+    logger.info('To use real APIs, set valid API keys in environment variables');
   }
 
   // TripAdvisor API Methods
@@ -325,6 +355,72 @@ export class ApiServiceManager {
     }
   }
 
+  // Booking.com API Methods
+  async searchAccommodations(params: SearchAccommodationsParams) {
+    logger.info(`Searching accommodations for location: ${params.location}`);
+    
+    const searchParams: BookingSearchParams = {
+      location: params.location,
+      checkIn: params.checkIn,
+      checkOut: params.checkOut,
+      adults: params.adults || 2,
+      children: params.children,
+      rooms: params.rooms || 1,
+      currency: params.currency || 'USD',
+      limit: params.limit || 20,
+      sort: params.sort || 'rating',
+      minPrice: params.minPrice,
+      maxPrice: params.maxPrice,
+    };
+
+    return this.bookingClient.searchAccommodations(searchParams);
+  }
+
+  async getAccommodationDetails(accommodationId: string) {
+    logger.info(`Getting accommodation details for ID: ${accommodationId}`);
+    return this.bookingClient.getAccommodationDetails(accommodationId);
+  }
+
+  async checkAccommodationAvailability(params: BookingAvailabilityParams) {
+    logger.info(`Checking availability for accommodation: ${params.accommodationId}`);
+    return this.bookingClient.checkAvailability(params);
+  }
+
+  async getPopularDestinations() {
+    logger.info('Getting popular destinations from Booking.com');
+    return this.bookingClient.getPopularDestinations();
+  }
+
+  // Weather API Methods
+  async getCurrentWeather(params: WeatherParams) {
+    logger.info(`Getting current weather for location: ${params.location}`);
+    
+    const weatherParams: WeatherSearchParams = {
+      location: params.location,
+      units: params.units || 'metric',
+      lang: params.lang || 'en',
+    };
+
+    return this.weatherClient.getCurrentWeather(weatherParams);
+  }
+
+  async getWeatherForecast(params: WeatherParams) {
+    logger.info(`Getting weather forecast for location: ${params.location}`);
+    
+    const weatherParams: WeatherSearchParams = {
+      location: params.location,
+      units: params.units || 'metric',
+      lang: params.lang || 'en',
+    };
+
+    return this.weatherClient.getWeatherForecast(weatherParams);
+  }
+
+  async getWeatherByCoordinates(lat: number, lon: number, units: string = 'metric') {
+    logger.info(`Getting weather for coordinates: ${lat}, ${lon}`);
+    return this.weatherClient.getWeatherByCoordinates(lat, lon, units);
+  }
+
   // Health check method
   async healthCheck() {
     logger.info('Performing API health check');
@@ -333,6 +429,8 @@ export class ApiServiceManager {
       tripAdvisor: false,
       googlePlaces: false,
       skyscanner: false,
+      booking: false,
+      weather: false,
       timestamp: new Date().toISOString(),
     };
 
@@ -358,6 +456,22 @@ export class ApiServiceManager {
       healthStatus.skyscanner = skResult.success;
     } catch (error) {
       logger.warn('Skyscanner API health check failed:', error);
+    }
+
+    try {
+      // Test Booking.com API
+      const bkResult = await this.getPopularDestinations();
+      healthStatus.booking = bkResult.success;
+    } catch (error) {
+      logger.warn('Booking.com API health check failed:', error);
+    }
+
+    try {
+      // Test Weather API
+      const wResult = await this.getCurrentWeather({ location: 'Paris, France' });
+      healthStatus.weather = wResult.success;
+    } catch (error) {
+      logger.warn('Weather API health check failed:', error);
     }
 
     return healthStatus;

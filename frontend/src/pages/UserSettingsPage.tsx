@@ -4,7 +4,7 @@ import {
   Settings, 
   Bell, 
   Shield, 
-  Globe, 
+ 
   CreditCard, 
   Download, 
   Trash2,

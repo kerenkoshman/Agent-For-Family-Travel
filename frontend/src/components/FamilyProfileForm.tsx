@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, X, User, Users, Calendar, MapPin, DollarSign, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, X, Users, DollarSign, Heart } from 'lucide-react';
 
 interface FamilyMember {
   id: string;
