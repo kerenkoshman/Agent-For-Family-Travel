@@ -23,11 +23,11 @@ Build a SmolAgent that helps users plan family trips by suggesting destinations,
 ## 📋 Phase 1: Project Setup & Foundation
 
 ### 1.1 Project Initialization
-- [ ] Initialize Git repository
-- [ ] Create project structure (frontend/backend folders)
-- [ ] Set up package.json files for both frontend and backend
-- [ ] Configure ESLint, Prettier, and TypeScript
-- [ ] Set up GitHub repository and branch protection
+- [x] Initialize Git repository
+- [x] Create project structure (frontend/backend folders)
+- [x] Set up package.json files for both frontend and backend
+- [x] Configure ESLint, Prettier, and TypeScript
+- [x] Set up GitHub repository and branch protection
 
 ### 1.2 Backend Foundation
 - [ ] Initialize Node.js Express server
